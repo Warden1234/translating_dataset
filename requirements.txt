@@ -1,0 +1,6 @@
+requests
+openai
+tiktoken
+dotenv
+polars
+pandas
