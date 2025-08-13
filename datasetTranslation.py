@@ -21,6 +21,11 @@ def translated(row):
   )
   return response.choices[0].message.content
 
+def сount_tokens(row):
+  encoding = tiktoken.encoding_for_model("gpt-4")
+  tokens_used = len(encoding.encode(row))
+  return tokens_used
+
 # Login using e.g. `huggingface-cli login` to access this dataset
 df = pl.read_ndjson('hf://datasets/BAAI/OpenSeek-Synthetic-Reasoning-Data-Examples/CC/CC.jsonl')
 
@@ -31,29 +36,55 @@ client = AzureOpenAI(
   api_version="2024-02-15-preview"
 )
 
+df_new=df.sample(10)
 
-df = df.with_columns(
+
+df_new = df_new.with_columns(
     pl.col("Chain-of-thought").map_elements(translated).alias("translated-Chain-of-thought")
 )
 
-df = df.with_columns(
+df_new = df_new.with_columns(
     pl.col("instruction").map_elements(translated).alias("translated-instruction")
 )
 
-df = df.with_columns(
-    pl.col("text").map_elements(translated).alias("translated-text")
+df_new = df_new.with_columns(
+    pl.col("raw").map_elements(translated).alias("translated-raw")
 )
 
-df.to_pandas().to_excel("translatedFull.xlsx", index=False)
+df_new = df_new.with_columns(
+    pl.col("translated-Chain-of-thought").map_elements(сount_tokens).alias("translated-Chain-of-thought-tokens")
+)
 
-# def annotate(df):
-    
+df_new = df_new.with_columns(
+    pl.col("translated-instruction").map_elements(сount_tokens).alias("translated-instruction-tokens")
+)
 
+df_new = df_new.with_columns(
+    pl.col("translated-raw").map_elements(сount_tokens).alias("translated-raw-tokens")
+)
 
+df_new = df_new.with_columns(
+    pl.col("Chain-of-thought").map_elements(сount_tokens).alias("Chain-of-thought-tokens")
+)
 
-# print(response.choices[0].message.content)
+df_new = df_new.with_columns(
+    pl.col("instruction").map_elements(сount_tokens).alias("instruction-tokens")
+)
 
-# # Optional: Count tokens
-# encoding = tiktoken.encoding_for_model("gpt-4")
-# tokens_used = len(encoding.encode(response.choices[0].message.content))
-# print(f"Tokens in output: {tokens_used}")
+df_new = df_new.with_columns(
+    pl.col("raw").map_elements(сount_tokens).alias("raw-tokens")
+)
+
+with open("total_tokens.txt", "w") as f:
+    total_thinking = df_new.select(pl.col("translated-Chain-of-thought-tokens").sum()).item()
+    total_instruction = df_new.select(pl.col("instruction-tokens").sum()).item()
+    total_raw = df_new.select(pl.col("raw-tokens").sum()).item()
+    ans = (
+        f"Chain of thought: {total_thinking}\n"
+        f"Total Instruction: {total_instruction}\n"
+        f"Total Raw: {total_raw}\n"
+        f"General amount: {total_thinking + total_instruction + total_raw}"
+    )
+    f.write(ans)
+
+df_new.to_pandas().to_excel("test2.xlsx", index=False)
