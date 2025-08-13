@@ -19,7 +19,10 @@ def translated(row):
       ],
       temperature=0
   )
-  return response.choices[0].message.content
+  try:
+    return response.choices[0].message.content
+  except Exception as e:
+     return "Error occured"
 
 def сount_tokens(row):
   encoding = tiktoken.encoding_for_model("gpt-4")
