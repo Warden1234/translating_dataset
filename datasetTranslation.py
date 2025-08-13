@@ -36,49 +36,48 @@ client = AzureOpenAI(
   api_version="2024-02-15-preview"
 )
 
-df_new=df.sample(10)
 
 
-df_new = df_new.with_columns(
+df = df.with_columns(
     pl.col("Chain-of-thought").map_elements(translated).alias("translated-Chain-of-thought")
 )
 
-df_new = df_new.with_columns(
+df = df.with_columns(
     pl.col("instruction").map_elements(translated).alias("translated-instruction")
 )
 
-df_new = df_new.with_columns(
+df = df.with_columns(
     pl.col("raw").map_elements(translated).alias("translated-raw")
 )
 
-df_new = df_new.with_columns(
+df = df.with_columns(
     pl.col("translated-Chain-of-thought").map_elements(сount_tokens).alias("translated-Chain-of-thought-tokens")
 )
 
-df_new = df_new.with_columns(
+df = df.with_columns(
     pl.col("translated-instruction").map_elements(сount_tokens).alias("translated-instruction-tokens")
 )
 
-df_new = df_new.with_columns(
+df = df.with_columns(
     pl.col("translated-raw").map_elements(сount_tokens).alias("translated-raw-tokens")
 )
 
-df_new = df_new.with_columns(
+df = df.with_columns(
     pl.col("Chain-of-thought").map_elements(сount_tokens).alias("Chain-of-thought-tokens")
 )
 
-df_new = df_new.with_columns(
+df = df.with_columns(
     pl.col("instruction").map_elements(сount_tokens).alias("instruction-tokens")
 )
 
-df_new = df_new.with_columns(
+df = df.with_columns(
     pl.col("raw").map_elements(сount_tokens).alias("raw-tokens")
 )
 
 with open("total_tokens.txt", "w") as f:
-    total_thinking = df_new.select(pl.col("translated-Chain-of-thought-tokens").sum()).item()
-    total_instruction = df_new.select(pl.col("instruction-tokens").sum()).item()
-    total_raw = df_new.select(pl.col("raw-tokens").sum()).item()
+    total_thinking = df.select(pl.col("translated-Chain-of-thought-tokens").sum()).item()
+    total_instruction = df.select(pl.col("instruction-tokens").sum()).item()
+    total_raw = df.select(pl.col("raw-tokens").sum()).item()
     ans = (
         f"Chain of thought: {total_thinking}\n"
         f"Total Instruction: {total_instruction}\n"
@@ -87,4 +86,4 @@ with open("total_tokens.txt", "w") as f:
     )
     f.write(ans)
 
-df_new.to_pandas().to_excel("test2.xlsx", index=False)
+df.to_pandas().to_csv("translated.csv", index=False)
