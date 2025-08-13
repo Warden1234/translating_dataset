@@ -11,18 +11,18 @@ import pandas as pd
 load_dotenv()
 
 def translated(row):
-  response = client.chat.completions.create(
-      model='gpt-4o-2024-11-20',
-      messages=[
-          {"role": "system", "content": "You are a helpful assistant that translate query into uzbek language. Return **ONLY** translated text without your comments"},
-          {"role": "user", "content": row}
-      ],
-      temperature=0
-  )
   try:
+    response = client.chat.completions.create(
+        model='gpt-4o-2024-11-20',
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant that translate query into uzbek language. Return **ONLY** translated text without your comments"},
+            {"role": "user", "content": row}
+        ],
+        temperature=0
+    )
     return response.choices[0].message.content
   except Exception as e:
-     return "Error occured"
+    return "Error occured"
 
 def сount_tokens(row):
   encoding = tiktoken.encoding_for_model("gpt-4")
